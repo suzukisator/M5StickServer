@@ -1,0 +1,63 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(300px, 1fr)); /* 一行に3つのグラフを表示 */
+  gap: 20px;
+  padding: 20px;
+}
+
+/* チャートコンテナのスタイルを調整 */
+.chart-container {
+  width: 100%;
+  max-width: 600px; /* 最大幅を設定 */
+  margin: auto;
+}
+
+@media (max-width: 768px) {
+  .chart-container {
+    max-width: 100%; /* ビューポートが768px以下の場合は幅を100%に */
+  }
+}
+
+.control-panel {
+  margin: 20px;
+  text-align: center;
+}
