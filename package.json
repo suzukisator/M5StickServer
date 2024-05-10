@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start-backend": "cd backend && npm start",
-    "start-frontend": "cd frontend && npm start",
-    "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\""
+    "start-server": "cd server && npm start",
+    "start-client": "cd client && npm start",
+    "start": "concurrently \"npm run start-server\" \"npm run start-client\""
   },
   "keywords": [],
   "author": "",
