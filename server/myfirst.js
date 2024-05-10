@@ -70,7 +70,7 @@ function setupTcpServer(io) {
     const tcpServer = net.createServer(socket => {
         console.log('TCP client connected');
         socket.on('data', buffer => {
-            if (buffer.length < 20) {
+            if (buffer.length < 24) {
                 console.error('Received data is too short.');
                 return;
             }
