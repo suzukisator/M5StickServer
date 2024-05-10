@@ -10,11 +10,11 @@ const char* server_ip = "192.168.50.24";
 */
 const char* ssid = "Buffalo-G-1AF0";
 const char* password = "7nyh4sj46px64";
-const char* server_ip = "192.168.50.9";
+const char* server_ip = "192.168.11.4";
 
 const int server_port = 3002;
-const int device_id = 5;
-const int interval = 5000;
+const int device_id = 2;
+const int interval = 10000;
 
 unsigned long prevTime = 0, startTime = 0;
 float filteredacc[3] = {0, 0, 0};
@@ -155,7 +155,7 @@ void loop(void) {
         startTime = currentTime;
         }
     }
-    delay(20);
+    delay(50);
     /*
     auto imu_update = StickCP2.Imu.update();
     if (imu_update) {

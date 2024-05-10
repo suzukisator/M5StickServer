@@ -70,23 +70,21 @@ function setupTcpServer(io) {
     const tcpServer = net.createServer(socket => {
         console.log('TCP client connected');
         socket.on('data', buffer => {
-            if (buffer.length < 16) {
+            if (buffer.length < 20) {
                 console.error('Received data is too short.');
                 return;
             }
             const receivedId = buffer.readUInt32LE(0);
-            //const receivedAccX = buffer.readFloatLE(4);
-            //const receivedAccY = buffer.readFloatLE(8);
-            //const receivedAccZ = buffer.readFloatLE(12);
-            const normAcc = buffer.readFloatLE(4);
-            const m5Time = buffer.readFloatLE(8);
-            const lat = buffer.readFloatLE(12);
-            const lng = buffer.readFloatLE(16);
+            const receivedAccX = buffer.readFloatLE(4);
+            const receivedAccY = buffer.readFloatLE(8);
+            const receivedAccZ = buffer.readFloatLE(12);
+            const normAcc = buffer.readFloatLE(16);
+            const m5Time = buffer.readFloatLE(20);
 
-            //const data = { time: getTime(), m5time: m5Time,id: receivedId, normacc: normAcc, accX: receivedAccX, accY: receivedAccY, accZ: receivedAccZ, lat: lat, lng: lng };
-            const data = { time: getTime(), m5time: m5Time, id: receivedId, normacc: normAcc, lat: lat, lng: lng }
+            const data = { time: getTime(), m5time: m5Time,id: receivedId, normacc: normAcc, accX: receivedAccX, accY: receivedAccY, accZ: receivedAccZ };
+            console.log(data)
 
-            //io.emit('data', data);  // Send data to WebSocket clients
+            io.emit('data', data);  // Send data to WebSocket clients
 
             if (isRecording) {
                 const dirPath = path.join(__dirname, "csv_data", `Device_${receivedId}`);
