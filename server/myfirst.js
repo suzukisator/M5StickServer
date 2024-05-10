@@ -98,11 +98,11 @@ function setupTcpServer(io) {
                     const csvFilename = `${dateStr}_${receivedId}_${Date.now()}.csv`;
                     const filepath = path.join(dirPath, csvFilename);
                     csvFiles[receivedId] = fs.createWriteStream(filepath, { flags: 'a' });
-                    csvFiles[receivedId].write("Time,m5time,accNorm,lat,lng\n");
+                    csvFiles[receivedId].write("Time,m5time,accNorm,accX,accY,accZ\n");
                     console.log(`New CSV file created: ${filepath}`);
                 }
 
-                const csvLine = `${data.time},${data.m5time},${data.normacc},${data.lat},${data.lng}\n`;
+                const csvLine = `${data.time},${data.m5time},${data.normacc},${data.accX},${data.accY},${data.accZ}\n`;
                 csvFiles[receivedId].write(csvLine);
             }
         });
