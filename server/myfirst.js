@@ -81,29 +81,32 @@ function setupTcpServer(io) {
             const normAcc = buffer.readFloatLE(16);
             const m5Time = buffer.readFloatLE(20);
 
+            
             const data = { time: getTime(), m5time: m5Time,id: receivedId, normacc: normAcc, accX: receivedAccX, accY: receivedAccY, accZ: receivedAccZ };
-            console.log(data)
+            
+            //console.log(data);
+            if (receivedId < 101) {
+                io.emit('data', data);  // Send data to WebSocket clients
 
-            io.emit('data', data);  // Send data to WebSocket clients
-
-            if (isRecording) {
-                const dirPath = path.join(__dirname, "csv_data", `Device_${receivedId}`);
-                if (!csvFiles[receivedId]) {
-                    if (!fs.existsSync(dirPath)){
-                        fs.mkdirSync(dirPath, { recursive: true });
+                if (isRecording) {
+                    const dirPath = path.join(__dirname, "csv_data", `Device_${receivedId}`);
+                    if (!csvFiles[receivedId]) {
+                        if (!fs.existsSync(dirPath)){
+                            fs.mkdirSync(dirPath, { recursive: true });
+                        }
+                        const timeStr = data["time"];
+                        const timeData = new Date(timeStr);
+                        const dateStr = timeData.toISOString().split('T')[0];
+                        const csvFilename = `${dateStr}_${receivedId}_${Date.now()}.csv`;
+                        const filepath = path.join(dirPath, csvFilename);
+                        csvFiles[receivedId] = fs.createWriteStream(filepath, { flags: 'a' });
+                        csvFiles[receivedId].write("Time,m5time,accNorm,accX,accY,accZ\n");
+                        console.log(`New CSV file created: ${filepath}`);
                     }
-                    const timeStr = data["time"];
-                    const timeData = new Date(timeStr);
-                    const dateStr = timeData.toISOString().split('T')[0];
-                    const csvFilename = `${dateStr}_${receivedId}_${Date.now()}.csv`;
-                    const filepath = path.join(dirPath, csvFilename);
-                    csvFiles[receivedId] = fs.createWriteStream(filepath, { flags: 'a' });
-                    csvFiles[receivedId].write("Time,m5time,accNorm,accX,accY,accZ\n");
-                    console.log(`New CSV file created: ${filepath}`);
-                }
 
-                const csvLine = `${data.time},${data.m5time},${data.normacc},${data.accX},${data.accY},${data.accZ}\n`;
-                csvFiles[receivedId].write(csvLine);
+                    const csvLine = `${data.time},${data.m5time},${data.normacc},${data.accX},${data.accY},${data.accZ}\n`;
+                    csvFiles[receivedId].write(csvLine);
+                }
             }
         });
 
