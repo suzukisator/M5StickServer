@@ -2,18 +2,19 @@
 #include <Kalman.h>
 #include <WiFi.h>
 
+/*
 //大学
 const char* ssid = "ASUS_28_2G";
 const char* password = "morning_6973";
 const char* server_ip = "192.168.50.9";
-
-/*自宅
+*/
+//自宅
 const char* ssid = "Buffalo-G-1AF0";
 const char* password = "7nyh4sj46px64";
-const char* server_ip = "192.168.50.9";
-*/
+const char* server_ip = "192.168.11.4";
+
 const int server_port = 3002;
-const int device_id = 3; //IDは1~100番までで設定。サーバー側でおかしなIDをはじく為
+const int device_id = 6; //IDは1~100番までで設定。サーバー側でおかしなIDをはじく為
 
 Kalman kalmanX;
 Kalman kalmanY;
@@ -28,7 +29,7 @@ float sumnormacc = 0;
 float meannormacc = 0;
 unsigned long prevTime = 0, startTime = 0;
 int count = 0;
-const int interval = 10000;
+const int interval = 100;
 
 WiFiClient wifiClient;
 
@@ -163,5 +164,5 @@ void loop() {
     }
   }
 
-  delay(20);
+  delay(50);
 }

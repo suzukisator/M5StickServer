@@ -1,194 +1,132 @@
-#include <M5StickCPlus2.h>
+#include <M5Unified.h>
 #include <Kalman.h>
 #include <WiFi.h>
 
-//大学wifiルーター
-/*
-const char* ssid = "ASUS_28_2G";
-const char* password = "morning_6973";
-const char* server_ip = "192.168.50.24";
-*/
+// WiFi設定
 const char* ssid = "Buffalo-G-1AF0";
 const char* password = "7nyh4sj46px64";
 const char* server_ip = "192.168.11.4";
-
 const int server_port = 3002;
-const int device_id = 2;
-const int interval = 10000;
+const int device_id = 6;
 
-unsigned long prevTime = 0, startTime = 0;
-float filteredacc[3] = {0, 0, 0};
-float sumAcc[3] = {0, 0, 0};
-float meanacc[3] = {0, 0, 0};
-float sumnormacc = 0;
-float meannormacc = 0;
+Kalman kalmanX, kalmanY, kalmanZ;
+float acc[3] = {0, 0, 0}, gyro[3] = {0, 0, 0}, filteredacc[3] = {0, 0, 0};
+float accnorm = 0;
+unsigned long prevTime = 0, startTime = 0, batteryUpdateTime = 0;
 int count = 0;
-
-Kalman kalmanX;
-Kalman kalmanY;
-Kalman kalmanZ;
-
+const int interval = 100;
 WiFiClient wifiClient;
 
-//ディスプレイ表示
-void displayConnectionStatus(const char* status) {
-    StickCP2.Display.fillScreen(BLACK);
-    StickCP2.Display.setCursor(0, 0);
-    StickCP2.Display.println("m5stickc2 ver 0.42");
-    StickCP2.Display.print("Device_ID : ");
-    StickCP2.Display.println(device_id);
-    StickCP2.Display.print("interval : ");
-    StickCP2.Display.print(interval);
-    StickCP2.Display.println("ms");
-    StickCP2.Display.println(status);
+// ディスプレイに情報を表示する
+void displayStatus(const char* status, bool wifiConnected, bool serverConnected) {
+  M5.Lcd.fillScreen(BLACK);
+  M5.Lcd.setRotation(1);  // 90度右に回転
+  M5.Lcd.setCursor(0, 0);
+  M5.Lcd.setTextSize(2);  // 文字サイズを変更
+  M5.Lcd.printf("Device_ID : %d\n", device_id);
+  M5.Lcd.printf("Battery: %d%%\n", M5.Power.getBatteryLevel());
+  M5.Lcd.printf("WiFi: %s\n", wifiConnected ? "Connected" : "Disconnected");
+  M5.Lcd.printf("Server: %s\n", serverConnected ? "Connected" : "Disconnected");
+  M5.Lcd.println(status);
 }
 
-//wifi接続
+// WiFi接続設定
 void setupWiFi() {
-    StickCP2.Display.println("Connecting to WiFi...");
-    WiFi.begin(ssid, password);
-    unsigned long startAttemptTime = millis();
+  M5.Lcd.println("Connecting to WiFi...");
+  WiFi.begin(ssid, password);
+  unsigned long startAttemptTime = millis();
 
-    while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000) {
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000) {
     delay(500);
-    StickCP2.Display.print(".");
-    }
+    M5.Lcd.print(".");
+  }
 
-    if (WiFi.status() != WL_CONNECTED) {
-    displayConnectionStatus("Failed to connect WiFi");
-    while(1) delay(1000);
-    } else {
-    displayConnectionStatus("WiFi connected");
-    }
+  if (WiFi.status() != WL_CONNECTED) {
+    displayStatus("Failed to connect WiFi", false, false);
+    while (1) delay(1000);
+  } else {
+    displayStatus("WiFi connected", true, false);
+  }
 }
 
-//サーバーとの接続確認
+// サーバー接続設定
 bool connectToServer() {
   if (!wifiClient.connect(server_ip, server_port)) {
-    displayConnectionStatus("server conn failed");
+    displayStatus("Server conn failed", true, false);
     return false;
   } else {
-    displayConnectionStatus("Connected to server");
+    displayStatus("Connected to server", true, true);
     return true;
   }
 }
 
-//送信データ作成
+// センサーデータ取得
+void getData() {
+  M5.Imu.getAccel(&acc[0], &acc[1], &acc[2]);
+  M5.Imu.getGyro(&gyro[0], &gyro[1], &gyro[2]);
+}
+
+// データ送信
 void sendData() {
   if (wifiClient.connected()) {
     byte data[24];
-
-    //int deviceIdNetworkOrder = htonl(device_id);
     float m5time = millis() / 1000.0f;
     *((int*)data) = device_id;
-    *((float*)(data + 4)) = meanacc[0];
-    *((float*)(data + 8)) = meanacc[1];
-    *((float*)(data + 12)) = meanacc[2];
-    *((float*)(data + 16)) = meannormacc;
+    *((float*)(data + 4)) = filteredacc[0];
+    *((float*)(data + 8)) = filteredacc[1];
+    *((float*)(data + 12)) = filteredacc[2];
+    *((float*)(data + 16)) = accnorm;
     *((float*)(data + 20)) = m5time;
-    /*
-    memcpy(data, &deviceIdNetworkOrder, sizeof(deviceIdNetworkOrder));
-    memcpy(data + 4, &meanacc[0], sizeof(meanacc[0]));
-    memcpy(data + 8, &meanacc[1], sizeof(meanacc[1]));
-    memcpy(data + 12, &meanacc[2], sizeof(meanacc[2]));
-    memcpy(data + 16, &meannormacc, sizeof(meannormacc));
-    memcpy(data + 20, &m5time, sizeof((m5time)));
-    */
 
     wifiClient.write(data, sizeof(data));
   } else {
     wifiClient.stop();
     while (!connectToServer()) {
-      displayConnectionStatus("Reconnection failed. Trying again...");
+      displayStatus("Reconnection failed. Trying again...", true, false);
       delay(1000);
     }
-    displayConnectionStatus("Reconnected to server");
+    displayStatus("Reconnected to server", true, true);
   }
 }
 
 void setup() {
-    auto cfg = M5.config();
-    StickCP2.begin(cfg);
-    StickCP2.Imu.init();
-    StickCP2.Display.setTextSize(1);
-    setupWiFi();
-    if (connectToServer()) {
-        displayConnectionStatus("Connected to server");
-    }
+  auto cfg = M5.config();
+  cfg.internal_imu = true; // 内部IMUを使用する設定
+  M5.begin(cfg);
+  M5.Lcd.setTextSize(2); // 文字サイズを変更
+  M5.Lcd.setRotation(1); // 90度右に回転
+  M5.Lcd.setBrightness(50); // 明るさを設定（0-255）
+  setupWiFi();
+  if (connectToServer()) {
+    displayStatus("Connected to server", true, true);
+  }
 
-    prevTime = millis();
-    startTime = millis();
+  prevTime = millis();
+  startTime = millis();
+  batteryUpdateTime = millis();
 }
 
-void loop(void) {
-    StickCP2.Imu.update();
+void loop() {
+  M5.update();
+  unsigned long currentTime = millis();
+  float dt = (currentTime - prevTime) / 1000.0f;
+  prevTime = currentTime;
 
-    unsigned long currentTime = millis();
-    float dt = (currentTime - prevTime) / 1000.0f;
-    prevTime = currentTime;
+  if (dt > 0) {
+    getData();
+    filteredacc[0] = kalmanX.getAngle(acc[0], gyro[0], dt);
+    filteredacc[1] = kalmanY.getAngle(acc[1], gyro[1], dt);
+    filteredacc[2] = kalmanZ.getAngle(acc[2], gyro[2], dt);
 
-    if (dt > 0) {
-        auto data = StickCP2.Imu.getImuData();
-        filteredacc[0] = kalmanX.getAngle( data.accel.x, data.gyro.x, dt);
-        filteredacc[1] = kalmanY.getAngle(data.accel.y, data.gyro.y, dt);
-        filteredacc[2] = kalmanZ.getAngle(data.accel.z, data.accel.z, dt);
+    accnorm = sqrt(filteredacc[0] * filteredacc[0] + filteredacc[1] * filteredacc[1] + filteredacc[2] * filteredacc[2]);
 
-        float normacc = sqrt(filteredacc[0]*filteredacc[0] + filteredacc[1]*filteredacc[1] + filteredacc[2]*filteredacc[2]);
+    sendData();
+  }
 
-        for (int i = 0; i < 3; i++) {
-        sumAcc[i] += filteredacc[i];
-        sumnormacc += normacc;
-        }
-        count++;
+  if (currentTime - batteryUpdateTime >= 5000) { // 5秒ごとにバッテリー状況を更新
+    displayStatus("Updating status...", WiFi.status() == WL_CONNECTED, wifiClient.connected());
+    batteryUpdateTime = currentTime;
+  }
 
-        if (currentTime - startTime >= interval) {
-        for (int i = 0; i < 3; i++) {
-        meanacc[i] = sumAcc[i] / count;
-        }
-        meannormacc = sumnormacc / count;
-        sendData();
-        for (int i = 0; i < 3; i++) {
-            sumAcc[i] = 0;
-        }
-        sumnormacc = 0;
-        count = 0;
-        startTime = currentTime;
-        }
-    }
-    delay(50);
-    /*
-    auto imu_update = StickCP2.Imu.update();
-    if (imu_update) {
-        StickCP2.Display.setCursor(0, 40);
-        StickCP2.Display.clear();  // Delay 100ms 延迟100ms
-
-        auto data = StickCP2.Imu.getImuData();
-
-        // The data obtained by getImuData can be used as follows.
-        // data.accel.x;      // accel x-axis value.
-        // data.accel.y;      // accel y-axis value.
-        // data.accel.z;      // accel z-axis value.
-        // data.accel.value;  // accel 3values array [0]=x / [1]=y / [2]=z.
-
-        // data.gyro.x;      // gyro x-axis value.
-        // data.gyro.y;      // gyro y-axis value.
-        // data.gyro.z;      // gyro z-axis value.
-        // data.gyro.value;  // gyro 3values array [0]=x / [1]=y / [2]=z.
-
-        // data.value;  // all sensor 9values array [0~2]=accel / [3~5]=gyro /
-        //              // [6~8]=mag
-
-        Serial.printf("ax:%f  ay:%f  az:%f\r\n", data.accel.x, data.accel.y,
-                      data.accel.z);
-        Serial.printf("gx:%f  gy:%f  gz:%f\r\n", data.gyro.x, data.gyro.y,
-                      data.gyro.z);
-
-        StickCP2.Display.printf("IMU:\r\n");
-        StickCP2.Display.printf("%0.2f %0.2f %0.2f\r\n", data.accel.x,
-                                data.accel.y, data.accel.z);
-        StickCP2.Display.printf("%0.2f %0.2f %0.2f\r\n", data.gyro.x,
-                                data.gyro.y, data.gyro.z);
-    }
-    delay(100);
-    */
+  delay(50);
 }

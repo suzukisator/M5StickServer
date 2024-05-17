@@ -94,9 +94,10 @@ function setupTcpServer(io) {
                         if (!fs.existsSync(dirPath)){
                             fs.mkdirSync(dirPath, { recursive: true });
                         }
+                        var date = new Date();
                         const timeStr = data["time"];
                         const timeData = new Date(timeStr);
-                        const dateStr = timeData.toISOString().split('T')[0];
+                        const dateStr = date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' +('0' + date.getDate()).slice(-2);
                         const csvFilename = `${dateStr}_${receivedId}_${Date.now()}.csv`;
                         const filepath = path.join(dirPath, csvFilename);
                         csvFiles[receivedId] = fs.createWriteStream(filepath, { flags: 'a' });
