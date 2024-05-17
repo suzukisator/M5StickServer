@@ -3,11 +3,11 @@
 #include <WiFi.h>
 
 // WiFi設定
-const char* ssid = "Buffalo-G-1AF0";
-const char* password = "7nyh4sj46px64";
-const char* server_ip = "192.168.11.4";
+const char* ssid = "ASUS_28_2G";
+const char* password = "morning_6973";
+const char* server_ip = "192.168.50.24";
 const int server_port = 3002;
-const int device_id = 6;
+const int device_id = 4;
 
 Kalman kalmanX, kalmanY, kalmanZ;
 float acc[3] = {0, 0, 0}, gyro[3] = {0, 0, 0}, filteredacc[3] = {0, 0, 0};
