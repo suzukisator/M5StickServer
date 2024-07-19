@@ -5,9 +5,10 @@
 // WiFi設定
 const char* ssid = "ASUS_28_2G";
 const char* password = "morning_6973";
-const char* server_ip = "192.168.50.24";
+
+const char* server_ip = "172.20.10.3";
 const int server_port = 3002;
-const int device_id = 4;
+const int device_id = 5;
 
 Kalman kalmanX, kalmanY, kalmanZ;
 float acc[3] = {0, 0, 0}, gyro[3] = {0, 0, 0}, filteredacc[3] = {0, 0, 0};
@@ -82,6 +83,12 @@ void sendData() {
   } else {
     wifiClient.stop();
     while (!connectToServer()) {
+      if (WiFi.status() != WL_CONNECTED) {
+        displayStatus("Failed to connect WiFi", false, false);
+        while (1) delay(1000);
+      } else {
+        displayStatus("WiFi connected", true, false);
+      }
       displayStatus("Reconnection failed. Trying again...", true, false);
       delay(1000);
     }
@@ -128,5 +135,5 @@ void loop() {
     batteryUpdateTime = currentTime;
   }
 
-  delay(50);
+  delay(20);
 }
