@@ -66,16 +66,6 @@ bool connectToServer() {
   }
 }
 
-bool connectToWiFi() {
-  if (WiFi.status() != WL_CONNECTED) {
-    displayStatus("WiFi conn failed", false, false);
-    return false;
-  } else {
-    displayStatus("Connected to WiFi", true, false);
-    return true;
-  }
-}
-
 // センサーデータ取得
 void getData() {
   M5.Imu.getAccel(&acc[0], &acc[1], &acc[2]);
@@ -84,7 +74,7 @@ void getData() {
 
 // データ送信
 void sendData() {
-  if (wifiClient.connected()) {
+  if (wifiClient.connected() && connectToServer()) {
     byte data[24];
     float m5time = millis() / 1000.0f;
     *((int*)data) = device_id;
@@ -95,8 +85,8 @@ void sendData() {
     *((float*)(data + 20)) = m5time;
 
     wifiClient.write(data, sizeof(data));
-  } else if (!connectToWiFi()){
-      while(!connectToWiFi()){
+  } else if (!wifiClient.connected()){
+      while(!wifiClient.connected()){
         setupWiFi();
       }
   } else {
