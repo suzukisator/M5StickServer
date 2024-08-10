@@ -7,7 +7,7 @@ const socketIo = require('socket.io');
 
 const WEB_SOCKET_PORT = 3001;
 const TCP_PORT = 3002;
-const HOST = '192.168.11.4';
+const HOST = '192.168.1.18';
 
 let isRecording = false;
 let csvFiles = {};
