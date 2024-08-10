@@ -165,8 +165,10 @@ void loop(void) {
     }
 
     if (display) {
+        M5.Lcd.setBrightness(70);
         displayfuctions();
     } else {
+        M5.Lcd.setBrightness(0);
         M5.Lcd.fillScreen(BLACK);
     }
 
@@ -176,5 +178,5 @@ void loop(void) {
     accelNorm();
     sendData();
 
-    delay(100);
+    delay(50);
 }
