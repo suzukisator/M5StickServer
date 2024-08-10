@@ -10,7 +10,7 @@ const char* password = "3455965811392";
 
 const char* server_ip = "192.168.1.18";
 const int server_port = 3002;
-const int device_id = 1;
+const int device_id = 2;
 
 float acc[3], gyro[3], kalacc[3] = {0, 0, 0};
 float accnorm, dt = 0;
@@ -53,7 +53,7 @@ void sendData(void) {
     wifiClient.write(data, sizeof(data));
 }
 
-void Display(void) {
+void BasicInfo(void) {
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(3,181);
     M5.Lcd.println("ID");
@@ -71,6 +71,7 @@ void line(void) {
 }
 
 void netWorkStatus(const char *wifistatus, const char *serverstatus) {
+    M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(97,181);
     M5.Lcd.println(device_id);
     M5.Lcd.fillRect(76,200,59,19,BLACK);
@@ -121,18 +122,69 @@ void VisualBattery(void) {
     }else if (20 >= battery) {
         batterycolor(BLACK, BLACK, BLACK, BLACK, GREEN);
     }
-    M5.Lcd.fillRect(0,0,60,19,BLACK);
-    M5.Lcd.setCursor(0,0);
-    M5.Lcd.println(battery,0);
+}
+
+void IMUInfo(void) {
+    M5.Lcd.setTextSize(1);
+    M5.Lcd.setCursor(3,3);
+    M5.Lcd.println("AccelX");
+    M5.Lcd.setCursor(3,23);
+    M5.Lcd.println("AccelY");
+    M5.Lcd.setCursor(3,43);
+    M5.Lcd.println("AccelZ");
+}
+
+void IMUprint(void) {
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.fillRect(60,0,75,20,BLUE);
+    M5.Lcd.setCursor(60,0);
+    M5.Lcd.println(kalacc[0],2);
+    M5.Lcd.fillRect(60,20,75,20,RED);
+    M5.Lcd.setCursor(60,20);
+    M5.Lcd.println(kalacc[1],2);
+    M5.Lcd.fillRect(60,40,75,20,DARKGREEN);
+    M5.Lcd.setCursor(60,40);
+    M5.Lcd.println(kalacc[2],2);
+    M5.Lcd.fillRect(59,0,1,61,WHITE);
+    M5.Lcd.fillRect(59,61,75,1,WHITE);
+}
+
+void BootTime(void) {
+    float seconds = millis() / 1000.0f;
+    int minutes = static_cast<int>(seconds) / 60;
+    int hours = minutes / 60;
+    seconds = static_cast<int>(seconds) % 60;
+    minutes = minutes % 60;
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setCursor(0,65);
+    M5.Lcd.println("BootTime");
+    M5.Lcd.setTextSize(3);
+    M5.Lcd.setCursor(90,90);
+    M5.Lcd.fillRect(90,90,40,35,BLUE);
+    M5.Lcd.println(seconds,0);
+    M5.Lcd.setCursor(45,90);
+    M5.Lcd.fillRect(45,90,40,35,RED);
+    M5.Lcd.println(minutes,0);
+    M5.Lcd.setCursor(0,90);
+    M5.Lcd.fillRect(0,90,40,35,DARKGREEN);
+    M5.Lcd.println(hours,0);
+    M5.Lcd.setCursor(75,90);
+    M5.Lcd.println(":");
+    M5.Lcd.setCursor(30,90);
+    M5.Lcd.println(":");
 }
 
 void displayfuctions(void) {
-    Display();
+    BasicInfo();
+    IMUInfo();
+    IMUprint();
+    BootTime();
     line();
     ConnectMonitor();
     visualdenchi();
     VisualBattery();
 }
+
 
 void setup(void) {
     auto cfg = M5.config();
