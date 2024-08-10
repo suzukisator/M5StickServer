@@ -35,9 +35,8 @@ void displayStatus(const char* status, bool wifiConnected, bool serverConnected)
 void setupWiFi() {
   M5.Lcd.println("Connecting to WiFi...");
   WiFi.begin(ssid, password);
-  unsigned long startAttemptTime = millis();
 
-  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000) {
+  while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     M5.Lcd.print(".");
   }
@@ -69,7 +68,7 @@ void getData() {
 
 // データ送信
 void sendData() {
-  if (wifiClient.connected()) {
+  if (wifiClient.connected() && connectToServer()) {
     byte data[24];
     float m5time = millis() / 1000.0f;
     *((int*)data) = device_id;
@@ -80,15 +79,13 @@ void sendData() {
     *((float*)(data + 20)) = m5time;
 
     wifiClient.write(data, sizeof(data));
+  } else if (!wifiClient.connected()){
+      while(!wifiClient.connected()){
+        setupWiFi();
+      }
   } else {
     wifiClient.stop();
     while (!connectToServer()) {
-      if (WiFi.status() != WL_CONNECTED) {
-        displayStatus("Failed to connect WiFi", false, false);
-        while (1) delay(1000);
-      } else {
-        displayStatus("WiFi connected", true, false);
-      }
       displayStatus("Reconnection failed. Trying again...", true, false);
       delay(1000);
     }

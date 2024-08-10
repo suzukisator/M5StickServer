@@ -5,9 +5,13 @@
 #include <SPIFFS.h>
 
 // WiFi設定
+/*
 const char* ssid = "ASUS_28_2G";
 const char* password = "morning_6973";
-const char* server_ip = "192.168.50.24";
+*/
+const char *ssid = "Buffalo-G-1AF0";
+const char *password = "7nyh4sj46px64";
+const char* server_ip = "192.168.11.2";
 const int server_port = 3002;
 const int device_id = 10;
 
@@ -36,9 +40,9 @@ void displayStatus(const char* status, bool wifiConnected, bool serverConnected)
 void setupWiFi() {
   M5.Lcd.println("Connecting to WiFi...");
   WiFi.begin(ssid, password);
-  unsigned long startAttemptTime = millis();
+  //unsigned long startAttemptTime = millis();
 
-  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000) {
+  while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     M5.Lcd.print(".");
   }
@@ -70,7 +74,7 @@ void getData() {
 
 // データ送信
 void sendData() {
-  if (wifiClient.connected()) {
+  if (wifiClient.connected() && connectToServer()) {
     byte data[24];
     float m5time = millis() / 1000.0f;
     *((int*)data) = device_id;
@@ -81,6 +85,10 @@ void sendData() {
     *((float*)(data + 20)) = m5time;
 
     wifiClient.write(data, sizeof(data));
+  } else if (!wifiClient.connected()){
+      while(!wifiClient.connected()){
+        setupWiFi();
+      }
   } else {
     wifiClient.stop();
     while (!connectToServer()) {
@@ -130,5 +138,5 @@ void loop() {
     batteryUpdateTime = currentTime;
   }
 
-  delay(200);
+  delay(20);
 }
