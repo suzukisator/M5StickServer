@@ -1,10 +1,9 @@
-// App.js
 import React, { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import io from 'socket.io-client';
 import './App.css';
 
-const socket = io('http://192.168.11.4:3001');
+const socket = io('http://192.168.1.18:3001');
 
 const RealTimeChart = ({ data, color }) => (
   <LineChart width={600} height={300} data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -63,9 +62,11 @@ const MultiDeviceChart = () => {
       <button onClick={toggleRecording}>
         {isRecording ? 'Stop Recording' : 'Start Recording'}
       </button>
-      {Object.entries(devicesData).map(([deviceId, deviceData]) => (
-        <DeviceChart key={deviceId} deviceId={deviceId} deviceData={deviceData} />
-      ))}
+      <div className="chart-grid">
+        {Object.entries(devicesData).map(([deviceId, deviceData]) => (
+          <DeviceChart key={deviceId} deviceId={deviceId} deviceData={deviceData} />
+        ))}
+      </div>
     </div>
   );
 };

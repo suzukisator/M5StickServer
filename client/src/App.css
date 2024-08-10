@@ -39,21 +39,20 @@
 
 .chart-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(300px, 1fr)); /* 一行に3つのグラフを表示 */
+  grid-template-columns: repeat(3, 1fr); /* 一行に3つのグラフを表示 */
   gap: 20px;
   padding: 20px;
 }
 
-/* チャートコンテナのスタイルを調整 */
 .chart-container {
   width: 100%;
-  max-width: 600px; /* 最大幅を設定 */
+  max-width: 600px;
   margin: auto;
 }
 
 @media (max-width: 768px) {
   .chart-container {
-    max-width: 100%; /* ビューポートが768px以下の場合は幅を100%に */
+    max-width: 100%;
   }
 }
 

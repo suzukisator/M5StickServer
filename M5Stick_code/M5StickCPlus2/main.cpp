@@ -1,136 +1,144 @@
-#include <M5StickCPlus2.h>
+#include <M5Unified.h>
 #include <Kalman.h>
 #include <WiFi.h>
 
-//大学wifiルーター
-/*
-const char* ssid = "ASUS_28_2G";
-const char* password = "morning_6973";
-const char* server_ip = "192.168.50.24";
-*/
-const char* ssid = "Buffalo-G-1AF0";
-const char* password = "7nyh4sj46px64";
-const char* server_ip = "192.168.11.4";
+// WiFi設定
+const char* ssid = "elecom2g-EEB358";
+const char* password = "3455965811392";
 
+const char* server_ip = "192.168.1.18";
 const int server_port = 3002;
 const int device_id = 1;
-const int interval = 10000;
 
-unsigned long prevTime = 0, startTime = 0;
-float filteredacc[3] = {0, 0, 0};
-float sumAcc[3] = {0, 0, 0};
-float meanacc[3] = {0, 0, 0};
-float sumnormacc = 0;
-float meannormacc = 0;
-float normacc = 0;
-int count = 0;
-
-Kalman kalmanX;
-Kalman kalmanY;
-Kalman kalmanZ;
-
+Kalman kalmanX, kalmanY, kalmanZ;
+float acc[3], gyro[3], kalacc[3] = {0, 0, 0};
+float accnorm, dt = 0;
+unsigned long prevTime, currentTime, startTime, batteryUpdateTime;
 WiFiClient wifiClient;
 
-//ディスプレイ表示
-void displayConnectionStatus(const char* status) {
-    StickCP2.Display.println(status);
+// ディスプレイに情報を表示する
+void displayStatus(const char* status, bool wifiConnected, bool serverConnected) {
+  M5.Lcd.fillScreen(BLACK);
+  M5.Lcd.setRotation(1);  // 90度右に回転
+  M5.Lcd.setCursor(0, 0);
+  M5.Lcd.setTextSize(2);  // 文字サイズを変更
+  M5.Lcd.printf("Device_ID : %d\n", device_id);
+  M5.Lcd.printf("Battery: %d%%\n", M5.Power.getBatteryLevel());
+  M5.Lcd.printf("WiFi: %s\n", wifiConnected ? "Connected" : "Disconnected");
+  M5.Lcd.printf("Server: %s\n", serverConnected ? "Connected" : "Disconnected");
+  M5.Lcd.println(status);
 }
 
-//wifi接続
+// WiFi接続設定
 void setupWiFi() {
-    StickCP2.Display.println("Connecting to WiFi...");
-    WiFi.begin(ssid, password);
-    unsigned long startAttemptTime = millis();
+  M5.Lcd.println("Connecting to WiFi...");
+  WiFi.begin(ssid, password);
+  unsigned long startAttemptTime = millis();
 
-    while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000) {
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000) {
     delay(500);
-    StickCP2.Display.print(".");
-    }
+    M5.Lcd.print(".");
+  }
 
-    if (WiFi.status() != WL_CONNECTED) {
-    displayConnectionStatus("Failed to connect WiFi");
-    while(1) delay(1000);
-    } else {
-    displayConnectionStatus("WiFi connected");
-    }
+  if (WiFi.status() != WL_CONNECTED) {
+    displayStatus("Failed to connect WiFi", false, false);
+    while (1) delay(1000);
+  } else {
+    displayStatus("WiFi connected", true, false);
+  }
 }
 
-//サーバーとの接続確認
+// サーバー接続設定
 bool connectToServer() {
   if (!wifiClient.connect(server_ip, server_port)) {
-    displayConnectionStatus("server conn failed");
+    displayStatus("Server conn failed", true, false);
     return false;
   } else {
-    displayConnectionStatus("Connected to server");
+    displayStatus("Connected to server", true, true);
     return true;
   }
 }
 
-//送信データ作成
+void deltaTime(void) {
+  currentTime = millis();
+  dt = (currentTime - prevTime) / 1000.0f;
+  prevTime = currentTime;
+}
+
+// センサーデータ取得
+void getData() {
+  M5.Imu.getAccel(&acc[0], &acc[1], &acc[2]);
+  M5.Imu.getGyro(&gyro[0], &gyro[1], &gyro[2]);
+}
+
+void kalmanAccel(void) {
+  kalacc[0] = kalmanX.getAngle(acc[0], gyro[0], dt);
+  kalacc[1] = kalmanY.getAngle(acc[1], gyro[1], dt);
+  kalacc[2] = kalmanZ.getAngle(acc[2], gyro[2], dt);
+}
+
+void accelNorm(void) {
+  accnorm = sqrt(kalacc[0] * kalacc[0] + kalacc[1] * kalacc[1] + kalacc[2] * kalacc[2]);
+}
+
+// データ送信
 void sendData() {
   if (wifiClient.connected()) {
     byte data[24];
-
-    //int deviceIdNetworkOrder = htonl(device_id);
     float m5time = millis() / 1000.0f;
     *((int*)data) = device_id;
-    *((float*)(data + 4)) = filteredacc[0];
-    *((float*)(data + 8)) = filteredacc[1];
-    *((float*)(data + 12)) = filteredacc[2];
-    *((float*)(data + 16)) = normacc;
+    *((float*)(data + 4)) = kalacc[0];
+    *((float*)(data + 8)) = kalacc[1];
+    *((float*)(data + 12)) = kalacc[2];
+    *((float*)(data + 16)) = accnorm;
     *((float*)(data + 20)) = m5time;
 
     wifiClient.write(data, sizeof(data));
   } else {
     wifiClient.stop();
     while (!connectToServer()) {
-      displayConnectionStatus("Reconnection failed. Trying again...");
+      if (WiFi.status() != WL_CONNECTED) {
+        displayStatus("Failed to connect WiFi", false, false);
+        while (WiFi.status() != WL_CONNECTED) delay(1000);
+          M5.Lcd.print(".");
+      } else {
+        displayStatus("WiFi connected", true, false);
+      }
+      displayStatus("Reconnection failed. Trying again...", true, false);
       delay(1000);
     }
-    displayConnectionStatus("Reconnected to server");
+    displayStatus("Reconnected to server", true, true);
   }
 }
 
 void setup() {
-    Serial.begin(115200);
-    auto cfg = M5.config();
-    StickCP2.begin(cfg);
-    StickCP2.Imu.init();
-    StickCP2.Display.setBrightness(128); // 画面の明るさを半分に設定
-    StickCP2.Display.setRotation(1);
-    StickCP2.Display.setTextSize(2);
-    StickCP2.Display.printf("Device_ID : %d\n", device_id);
-    StickCP2.Display.printf("Battery : %d % \n", StickCP2.Power.getBatteryLevel());
-    setupWiFi();
-    if (connectToServer()) {
-        displayConnectionStatus("Connected to server");
-    }
+  auto cfg = M5.config();
+  cfg.internal_imu = true; // 内部IMUを使用する設定
+  M5.begin(cfg);
+  M5.Lcd.setTextSize(2); // 文字サイズを変更
+  M5.Lcd.setRotation(1); // 90度右に回転
+  M5.Lcd.setBrightness(30); // 明るさを設定（0-255）
+  setupWiFi();
+  if (connectToServer()) {
+    displayStatus("Connected to server", true, true);
+  }
 
-    prevTime = millis();
-    startTime = millis();
+  prevTime = millis();
+  startTime = millis();
+  batteryUpdateTime = millis();
 }
 
-void loop(void) {
-    StickCP2.Imu.update();
-    unsigned long currentTime = millis();
-    float dt = (currentTime - prevTime) / 1000.0f;
-    prevTime = currentTime;
+void loop() {
+  M5.update();
 
-    if (dt > 0) {
-        auto data = StickCP2.Imu.getImuData();
-        filteredacc[0] = data.accel.x;
-        filteredacc[1] = data.accel.y;
-        filteredacc[2] = data.accel.z;
+  deltaTime();
 
-        normacc = sqrt(filteredacc[0]*filteredacc[0] + filteredacc[1]*filteredacc[1] + filteredacc[2]*filteredacc[2]);
-        if (interval <= currentTime - startTime) {
-          StickCP2.Display.fillScreen(BLACK);
-          StickCP2.Display.setCursor(0, 0);
-          StickCP2.Display.printf("Device_ID : %d", device_id);
-          StickCP2.Display.printf("Battery : %d %", StickCP2.Power.getBatteryLevel());
-          startTime = currentTime;
-        }
-        sendData();
-    }
-    delay(50);
+  if (dt > 0) {
+    getData();
+    kalmanAccel();
+    accelNorm();
+    sendData();
+  }
+
+  delay(20);
 }
