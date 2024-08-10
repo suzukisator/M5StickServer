@@ -12,16 +12,27 @@ const HOST = '192.168.1.18'; //IPアドレス
 let isRecording = false;
 let csvFiles = {};
 
-function getTime(){
-    var date = new Date();
-    let time_now = date.getFullYear()  //現在時刻
-        + '/' + ('0' + (date.getMonth() + 1)).slice(-2) 
-        + '/' +('0' + date.getDate()).slice(-2) 
-        + ' ' +  ('0' + date.getHours()).slice(-2) 
-        + ':' + ('0' + date.getMinutes()).slice(-2) 
-        + ':' + ('0' + date.getSeconds()).slice(-2) 
-        + '.' + date.getMilliseconds();
-    return time_now;
+function formatDate(date, includeTime = false) {
+    let formattedDate = date.getFullYear()  //現在時刻
+        + '-' + ('0' + (date.getMonth() + 1)).slice(-2) 
+        + '-' + ('0' + date.getDate()).slice(-2);
+    
+    if (includeTime) {
+        formattedDate += ' ' + ('0' + date.getHours()).slice(-2) 
+            + ':' + ('0' + date.getMinutes()).slice(-2) 
+            + ':' + ('0' + date.getSeconds()).slice(-2) 
+            + '.' + ('00' + date.getMilliseconds()).slice(-3);
+    }
+    
+    return formattedDate;
+}
+
+function getTime() {
+    return formatDate(new Date(), true);
+}
+
+function getCSVTime() {
+    return formatDate(new Date(), false);
 }
 
 function setupWebSocketServer() {
@@ -89,7 +100,7 @@ function setupTcpServer(io) {
                 io.emit('data', data);  // Send data to WebSocket clients
 
                 if (isRecording) {
-                    const dirPath = path.join(__dirname, "csv_data", `Device_${receivedId}`);
+                    const dirPath = path.join(__dirname, ".." ,"csv_data", `${getCSVTime()}` , `Device_${receivedId}`);
                     if (!csvFiles[receivedId]) {
                         if (!fs.existsSync(dirPath)){
                             fs.mkdirSync(dirPath, { recursive: true });
