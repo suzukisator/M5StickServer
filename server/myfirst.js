@@ -7,7 +7,7 @@ const socketIo = require('socket.io');
 
 const WEB_SOCKET_PORT = 3001;
 const TCP_PORT = 3002;
-const HOST = '192.168.1.18';
+const HOST = '192.168.1.18'; //IPアドレス
 
 let isRecording = false;
 let csvFiles = {};
@@ -68,7 +68,7 @@ function setupWebSocketServer() {
 
 function setupTcpServer(io) {
     const tcpServer = net.createServer(socket => {
-        console.log('TCP client connected');
+        console.log('TCP client connected',getTime());
         socket.on('data', buffer => {
             if (buffer.length < 24) {
                 console.error('Received data is too short.');

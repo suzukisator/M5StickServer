@@ -5,8 +5,8 @@
 Kalman kalmanX, kalmanY, kalmanZ;
 WiFiClient wifiClient;
 
-const char* ssid = "elecom2g-EEB358";
-const char* password = "3455965811392";
+const char* ssid = "";
+const char* password = "";
 
 const char* server_ip = "192.168.1.18";
 const int server_port = 3002;
