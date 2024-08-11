@@ -7,7 +7,7 @@ const socketIo = require('socket.io');
 
 const WEB_SOCKET_PORT = 3001;
 const TCP_PORT = 3002;
-const HOST = '192.168.1.18'; //IPアドレス
+const HOST = '192.168.1.4'; //IPアドレス
 
 let isRecording = false;
 let csvFiles = {};
@@ -92,7 +92,6 @@ function setupTcpServer(io) {
             const normAcc = buffer.readFloatLE(16);
             const m5Time = buffer.readFloatLE(20);
 
-            
             const data = { time: getTime(), m5time: m5Time,id: receivedId, normacc: normAcc, accX: receivedAccX, accY: receivedAccY, accZ: receivedAccZ };
             
             //console.log(data);

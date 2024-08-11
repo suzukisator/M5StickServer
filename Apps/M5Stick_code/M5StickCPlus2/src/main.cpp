@@ -14,7 +14,7 @@ const int device_id = 2;
 
 float acc[3], gyro[3], kalacc[3] = {0, 0, 0};
 float accnorm, dt = 0;
-unsigned long prevTime, currentTime, startTime;
+unsigned long prevTime, currentTime;
 float battery = 100.0f;
 bool display = true;
 int displaycount = 0;
@@ -199,10 +199,7 @@ void setup(void) {
     displayfuctions();
 
     prevTime = millis();
-    startTime = millis();
 }
-
-
 
 void loop(void) {
     M5.update();
