@@ -11,7 +11,7 @@ const char* PASSWORD = "3455965811392";
 
 const char* SERVER_IP = "192.168.1.3";
 const int SERVER_PORT = 3002;
-const int DEVICE_ID = 1;
+const int DEVICE_ID = 2;
 
 float acc[3], gyro[3], kalacc[3] = {0, 0, 0};
 float accnorm, dt = 0;
@@ -86,13 +86,26 @@ void netWorkStatus(const char *wifistatus, const char *serverstatus) {
 }
 
 void ConnectMonitor(void) {
+    if (WiFi.status() != WL_CONNECTED) {
+        if (display) {
+            netWorkStatus("No", "No");
+        }
+        WiFi.begin(SSID, PASSWORD);
+        delay(2000);
+        return;
+    }
+
     if (wifiClient.connected()) {
-        netWorkStatus("Yes", "Yes");
-    }else if (WiFi.status() != WL_CONNECTED) {
-        netWorkStatus("No","No");
-    }else if (!wifiClient.connect(SERVER_IP, SERVER_PORT)) {
+        if (display) {
+            netWorkStatus("Yes", "Yes");
+        }
+
+    } else {
         wifiClient.stop();
-        netWorkStatus("Yes", "No");
+        if (display) {
+            netWorkStatus("Yes", "No");
+        }
+        wifiClient.connect(SERVER_IP, SERVER_PORT);
     }
 }
 
@@ -205,6 +218,7 @@ void screenControl(void) {
     } else {
         M5.Lcd.setBrightness(0);
         M5.Lcd.fillScreen(BLACK);
+        ConnectMonitor();
     }
 }
 
