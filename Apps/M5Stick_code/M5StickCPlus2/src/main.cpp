@@ -188,17 +188,6 @@ void BootTime(void) {
     M5.Lcd.println(":");
 }
 
-void displayfuctions(void) {
-    BasicInfo();
-    IMUInfo();
-    IMUprint();
-    BootTime();
-    line();
-    ConnectMonitor();
-    visualdenchi();
-    VisualBattery();
-}
-
 void screenControl(void) {
     if (M5.BtnA.isPressed()) {
         if (displaycount == 0) {
@@ -212,11 +201,16 @@ void screenControl(void) {
 
     if (display) {
         M5.Lcd.setBrightness(70);
-        displayfuctions();
+        BasicInfo();
+        IMUInfo();
+        IMUprint();
+        BootTime();
+        line();
+        visualdenchi();
+        VisualBattery();
     } else {
         M5.Lcd.setBrightness(0);
         M5.Lcd.fillScreen(BLACK);
-        ConnectMonitor();
     }
 }
 
@@ -230,7 +224,13 @@ void setup(void) {
     WiFi.begin(SSID, PASSWORD);
     wifiClient.connect(SERVER_IP, SERVER_PORT);
 
-    displayfuctions();
+    BasicInfo();
+    IMUInfo();
+    IMUprint();
+    BootTime();
+    line();
+    visualdenchi();
+    VisualBattery();
 
     prevTime = millis();
 }
@@ -244,6 +244,7 @@ void loop(void) {
     accelNorm();
 
     screenControl();
+    ConnectMonitor();
 
     sendData();
 
