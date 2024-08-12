@@ -6,12 +6,12 @@ Kalman kalmanX, kalmanY, kalmanZ;
 WiFiClient wifiClient;
 
 // wifi設定
-const char* SSID = "elecom2g-EEB358";
-const char* PASSWORD = "3455965811392";
+const char* SSID = "";
+const char* PASSWORD = "";
 
-const char* SERVER_IP = "192.168.1.3";
+const char* SERVER_IP = "";
 const int SERVER_PORT = 3002;
-const int DEVICE_ID = 2;
+const int DEVICE_ID = 1;
 
 float acc[3], gyro[3], kalacc[3] = {0, 0, 0};
 float accnorm, dt = 0;
@@ -90,8 +90,6 @@ void ConnectMonitor(void) {
         if (display) {
             netWorkStatus("No", "No");
         }
-        WiFi.begin(SSID, PASSWORD);
-        delay(2000);
         return;
     }
 
