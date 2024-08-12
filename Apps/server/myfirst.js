@@ -7,7 +7,7 @@ const socketIo = require('socket.io');
 
 const WEB_SOCKET_PORT = 3001;
 const TCP_PORT = 3002;
-const HOST = '192.168.1.4'; //IPアドレス
+const HOST = '192.168.1.3'; //IPアドレス
 
 let isRecording = false;
 let csvFiles = {};
@@ -122,7 +122,7 @@ function setupTcpServer(io) {
         });
 
         socket.on('close', () => {
-            console.log('TCP client disconnected');
+            console.log('TCP client disconnected', getTime());
         });
 
         socket.on('error', error => {

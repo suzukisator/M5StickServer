@@ -5,12 +5,13 @@
 Kalman kalmanX, kalmanY, kalmanZ;
 WiFiClient wifiClient;
 
-const char* ssid = "";
-const char* password = "";
+// wifi設定
+const char* SSID = "elecom2g-EEB358";
+const char* PASSWORD = "3455965811392";
 
-const char* server_ip = "192.168.1.18";
-const int server_port = 3002;
-const int device_id = 2;
+const char* SERVER_IP = "192.168.1.3";
+const int SERVER_PORT = 3002;
+const int DEVICE_ID = 1;
 
 float acc[3], gyro[3], kalacc[3] = {0, 0, 0};
 float accnorm, dt = 0;
@@ -41,16 +42,18 @@ void accelNorm(void) {
 }
 
 void sendData(void) {
-    byte data[24];
-    float m5time = millis() / 1000.0f;
-    *((int*)data) = device_id;
-    *((float*)(data + 4)) = kalacc[0];
-    *((float*)(data + 8)) = kalacc[1];
-    *((float*)(data + 12)) = kalacc[2];
-    *((float*)(data + 16)) = accnorm;
-    *((float*)(data + 20)) = m5time;
+    if (wifiClient.connected()) {
+        byte data[24];
+        float m5time = millis() / 1000.0f;
+        *((int*)data) = DEVICE_ID;
+        *((float*)(data + 4)) = kalacc[0];
+        *((float*)(data + 8)) = kalacc[1];
+        *((float*)(data + 12)) = kalacc[2];
+        *((float*)(data + 16)) = accnorm;
+        *((float*)(data + 20)) = m5time;
 
-    wifiClient.write(data, sizeof(data));
+        wifiClient.write(data, sizeof(data));
+    }
 }
 
 void BasicInfo(void) {
@@ -73,7 +76,7 @@ void line(void) {
 void netWorkStatus(const char *wifistatus, const char *serverstatus) {
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(97,181);
-    M5.Lcd.println(device_id);
+    M5.Lcd.println(DEVICE_ID);
     M5.Lcd.fillRect(76,200,59,19,BLACK);
     M5.Lcd.setCursor(80,201);
     M5.Lcd.println(wifistatus);
@@ -87,7 +90,7 @@ void ConnectMonitor(void) {
         netWorkStatus("Yes", "Yes");
     }else if (WiFi.status() != WL_CONNECTED) {
         netWorkStatus("No","No");
-    }else if (!wifiClient.connect(server_ip, server_port)) {
+    }else if (!wifiClient.connect(SERVER_IP, SERVER_PORT)) {
         wifiClient.stop();
         netWorkStatus("Yes", "No");
     }
@@ -185,24 +188,7 @@ void displayfuctions(void) {
     VisualBattery();
 }
 
-
-void setup(void) {
-    auto cfg = M5.config();
-    cfg.internal_imu = true;
-    M5.begin(cfg);
-    M5.Lcd.setTextSize(1);
-    M5.Lcd.setRotation(0);
-    M5.Lcd.setTextColor(WHITE);
-    WiFi.begin(ssid, password);
-    wifiClient.connect(server_ip, server_port);
-
-    displayfuctions();
-
-    prevTime = millis();
-}
-
-void loop(void) {
-    M5.update();
+void screenControl(void) {
     if (M5.BtnA.isPressed()) {
         if (displaycount == 0) {
             display = false;
@@ -220,11 +206,33 @@ void loop(void) {
         M5.Lcd.setBrightness(0);
         M5.Lcd.fillScreen(BLACK);
     }
+}
+
+void setup(void) {
+    auto cfg = M5.config();
+    cfg.internal_imu = true;
+    M5.begin(cfg);
+    M5.Lcd.setTextSize(1);
+    M5.Lcd.setRotation(0);
+    M5.Lcd.setTextColor(WHITE);
+    WiFi.begin(SSID, PASSWORD);
+    wifiClient.connect(SERVER_IP, SERVER_PORT);
+
+    displayfuctions();
+
+    prevTime = millis();
+}
+
+void loop(void) {
+    M5.update();
 
     deltaTime();
     getIMU();
     kalmanAccel();
     accelNorm();
+
+    screenControl();
+
     sendData();
 
     delay(50);
