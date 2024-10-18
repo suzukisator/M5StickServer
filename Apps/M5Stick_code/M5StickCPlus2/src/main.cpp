@@ -6,12 +6,12 @@ Kalman kalmanX, kalmanY, kalmanZ;
 WiFiClient wifiClient;
 
 // wifi設定
-const char* SSID = "";
-const char* PASSWORD = "";
+const char* SSID = "Buffalo-G-1AF0";
+const char* PASSWORD = "7nyh4sj46px64";
 
-const char* SERVER_IP = "";
+const char* SERVER_IP = "192.168.11.2";
 const int SERVER_PORT = 3002;
-const int DEVICE_ID = 1;
+const int DEVICE_ID = 2;
 
 float acc[3], gyro[3], kalacc[3] = {0, 0, 0};
 float accnorm, dt = 0;
@@ -163,7 +163,7 @@ void IMUprint(void) {
     M5.Lcd.fillRect(59,61,75,1,WHITE);
 }
 
-void BootTime(void) {
+void UpTime(void) {
     float seconds = millis() / 1000.0f;
     int minutes = static_cast<int>(seconds) / 60;
     int hours = minutes / 60;
@@ -171,7 +171,7 @@ void BootTime(void) {
     minutes = minutes % 60;
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(0,65);
-    M5.Lcd.println("BootTime");
+    M5.Lcd.println("Up Time");
     M5.Lcd.setTextSize(3);
     M5.Lcd.setCursor(90,90);
     M5.Lcd.fillRect(90,90,40,35,BLUE);
@@ -204,7 +204,7 @@ void screenControl(void) {
         BasicInfo();
         IMUInfo();
         IMUprint();
-        BootTime();
+        UpTime();
         line();
         visualdenchi();
         VisualBattery();
@@ -227,7 +227,7 @@ void setup(void) {
     BasicInfo();
     IMUInfo();
     IMUprint();
-    BootTime();
+    UpTime();
     line();
     visualdenchi();
     VisualBattery();
