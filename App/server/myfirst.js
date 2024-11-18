@@ -89,8 +89,10 @@ function setupTcpServer(io) {
             const receivedAccX = buffer.readFloatLE(4);
             const receivedAccY = buffer.readFloatLE(8);
             const receivedAccZ = buffer.readFloatLE(12);
-            const normAcc = buffer.readFloatLE(16);
-            const m5Time = buffer.readFloatLE(20);
+            //const normAcc = buffer.readFloatLE(16);
+            const m5Time = buffer.readFloatLE(16);
+
+            const normAcc = Math.sqrt(receivedAccX * receivedAccX + receivedAccY * receivedAccY + receivedAccZ * receivedAccZ);
 
             const data = { time: getTime(), m5time: m5Time,id: receivedId, normacc: normAcc, accX: receivedAccX, accY: receivedAccY, accZ: receivedAccZ };
             
