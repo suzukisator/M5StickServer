@@ -36,10 +36,11 @@ void kalmanAccel(void) {
     kalacc[1] = kalmanY.getAngle(acc[1], gyro[1], dt);
     kalacc[2] = kalmanZ.getAngle(acc[2], gyro[2], dt);
 }
-
+/*
 void accelNorm(void) {
     accnorm = sqrt(kalacc[0]*kalacc[0] + kalacc[1]*kalacc[1] + kalacc[2]*kalacc[2]);
 }
+*/
 
 void sendData(void) {
     if (wifiClient.connected()) {
@@ -49,8 +50,7 @@ void sendData(void) {
         *((float*)(data + 4)) = kalacc[0];
         *((float*)(data + 8)) = kalacc[1];
         *((float*)(data + 12)) = kalacc[2];
-        *((float*)(data + 16)) = accnorm;
-        *((float*)(data + 20)) = m5time;
+        *((float*)(data + 16)) = m5time;
 
         wifiClient.write(data, sizeof(data));
     }
@@ -241,7 +241,7 @@ void loop(void) {
     deltaTime();
     getIMU();
     kalmanAccel();
-    accelNorm();
+    //accelNorm();
 
     screenControl();
     ConnectMonitor();
