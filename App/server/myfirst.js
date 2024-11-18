@@ -7,7 +7,7 @@ const socketIo = require('socket.io');
 
 const WEB_SOCKET_PORT = 3001;
 const TCP_PORT = 3002;
-const HOST = '192.168.11.2'; //IPアドレス
+const HOST = '192.168.11.3'; //IPアドレス
 
 let isRecording = false;
 let csvFiles = {};
@@ -89,13 +89,20 @@ function setupTcpServer(io) {
             const receivedAccX = buffer.readFloatLE(4);
             const receivedAccY = buffer.readFloatLE(8);
             const receivedAccZ = buffer.readFloatLE(12);
-            //const normAcc = buffer.readFloatLE(16);
             const m5Time = buffer.readFloatLE(16);
 
+            //加速度ノルムの計算
             const normAcc = Math.sqrt(receivedAccX * receivedAccX + receivedAccY * receivedAccY + receivedAccZ * receivedAccZ);
 
-            const data = { time: getTime(), m5time: m5Time,id: receivedId, normacc: normAcc, accX: receivedAccX, accY: receivedAccY, accZ: receivedAccZ };
-            
+            const data = { time: getTime(), 
+                m5time: m5Time, 
+                id: receivedId, 
+                normacc: normAcc, 
+                accX: receivedAccX, 
+                accY: receivedAccY, 
+                accZ: receivedAccZ 
+            };
+
             //console.log(data);
             if (receivedId < 101) {
                 io.emit('data', data);  // Send data to WebSocket clients
