@@ -3,11 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'r
 import io from 'socket.io-client';
 import './App.css';
 
-<<<<<<< HEAD
-const socket = io('http://192.168.50.24:3001');
-=======
 const socket = io('http://localhost:3001');
->>>>>>> b331c4987aa45f2518802a71d88d578e51c9fb4e
 
 const RealTimeChart = ({ data, color }) => (
   <LineChart width={600} height={300} data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
