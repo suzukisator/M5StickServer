@@ -7,7 +7,7 @@ import { Server as SocketIoServer } from 'socket.io'; // Updated import
 
 const WEB_SOCKET_PORT = 3001;
 const TCP_PORT = 3002;
-const HOST = '192.168.11.7'; //IPアドレス
+const HOST = '192.168.11.8'; //IPアドレス
 
 let isRecording = false;
 let csvFiles = {};
