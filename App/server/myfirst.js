@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 const net = require('net');
 const express = require('express');
@@ -7,7 +6,7 @@ const socketIo = require('socket.io');
 
 const WEB_SOCKET_PORT = 3001;
 const TCP_PORT = 3002;
-const HOST = '192.168.1.3'; //IPアドレス
+const HOST = '192.168.50.24'; //IPアドレス
 
 let isRecording = false;
 let csvFiles = {};

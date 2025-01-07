@@ -6,12 +6,12 @@ Kalman kalmanX, kalmanY, kalmanZ;
 WiFiClient wifiClient;
 
 // wifi設定
-const char* SSID = "Buffalo-G-1AF0";
-const char* PASSWORD = "7nyh4sj46px64";
+const char* SSID = "ASUS_A8_2G";
+const char* PASSWORD = "jazz_3264";
 
-const char* SERVER_IP = "192.168.11.2";
+const char* SERVER_IP = "192.168.50.24";
 const int SERVER_PORT = 3002;
-const int DEVICE_ID = 2;
+const int DEVICE_ID = 4;
 
 float acc[3], gyro[3], kalacc[3] = {0, 0, 0};
 float accnorm, dt = 0;
@@ -44,7 +44,7 @@ void accelNorm(void) {
 
 void sendData(void) {
     if (wifiClient.connected()) {
-        byte data[24];
+        byte data[20];
         float m5time = millis() / 1000.0f;
         *((int*)data) = DEVICE_ID;
         *((float*)(data + 4)) = kalacc[0];
@@ -152,18 +152,18 @@ void IMUprint(void) {
     M5.Lcd.setTextSize(2);
     M5.Lcd.fillRect(60,0,75,20,BLUE);
     M5.Lcd.setCursor(60,0);
-    M5.Lcd.println(kalacc[0],2);
+    M5.Lcd.println(kalacc[0],1);
     M5.Lcd.fillRect(60,20,75,20,RED);
     M5.Lcd.setCursor(60,20);
-    M5.Lcd.println(kalacc[1],2);
+    M5.Lcd.println(kalacc[1],1);
     M5.Lcd.fillRect(60,40,75,20,DARKGREEN);
     M5.Lcd.setCursor(60,40);
-    M5.Lcd.println(kalacc[2],2);
+    M5.Lcd.println(kalacc[2],1);
     M5.Lcd.fillRect(59,0,1,61,WHITE);
     M5.Lcd.fillRect(59,61,75,1,WHITE);
 }
 
-void UpTime(void) {
+void UpTime() {
     float seconds = millis() / 1000.0f;
     int minutes = static_cast<int>(seconds) / 60;
     int hours = minutes / 60;
@@ -188,14 +188,16 @@ void UpTime(void) {
     M5.Lcd.println(":");
 }
 
-void screenControl(void) {
+void screenControler(void) {
     if (M5.BtnA.isPressed()) {
         if (displaycount == 0) {
             display = false;
             displaycount ++;
+            delay(100);
         } else if (displaycount == 1) {
             display = true;
             displaycount = 0;
+            delay(100);
         }
     }
 
@@ -224,13 +226,7 @@ void setup(void) {
     WiFi.begin(SSID, PASSWORD);
     wifiClient.connect(SERVER_IP, SERVER_PORT);
 
-    BasicInfo();
-    IMUInfo();
-    IMUprint();
-    UpTime();
-    line();
-    visualdenchi();
-    VisualBattery();
+    screenControler();
 
     prevTime = millis();
 }
@@ -243,7 +239,7 @@ void loop(void) {
     kalmanAccel();
     //accelNorm();
 
-    screenControl();
+    screenControler();
     ConnectMonitor();
 
     sendData();
