@@ -3,7 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'r
 import io from 'socket.io-client';
 import './App.css';
 
-const socket = io('http://192.168.11.3:3001');
+const socket = io('http://localhost:3001');
 
 const RealTimeChart = ({ data, color }) => (
   <LineChart width={600} height={300} data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -23,7 +23,7 @@ const DeviceChart = ({ deviceId, deviceData }) => (
     <h2>Device {deviceId}</h2>
     <RealTimeChart data={deviceData} color="#8884d8" />
   </div>
-);
+); 
 
 const MultiDeviceChart = () => {
   const [isRecording, setIsRecording] = useState(JSON.parse(localStorage.getItem('isRecording')) || false);

@@ -1,13 +1,13 @@
-const fs = require('fs');
-const path = require('path');
-const net = require('net');
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
+import fs from 'fs';
+import path from 'path';
+import net from 'net';
+import express from 'express';
+import http from 'http';
+import { Server as SocketIoServer } from 'socket.io'; // Updated import
 
 const WEB_SOCKET_PORT = 3001;
 const TCP_PORT = 3002;
-const HOST = '192.168.11.3'; //IPアドレス
+const HOST = '192.168.11.7'; //IPアドレス
 
 let isRecording = false;
 let csvFiles = {};
@@ -38,7 +38,7 @@ function getCSVTime() {
 function setupWebSocketServer() {
     const app = express();
     const server = http.createServer(app);
-    const io = socketIo(server, {
+    const io = new SocketIoServer(server, { // Updated usage
         cors: {
             origin: "*",
             methods: ["GET", "POST"]
@@ -97,7 +97,7 @@ function setupTcpServer(io) {
             const data = { time: getTime(), 
                 m5time: m5Time, 
                 id: receivedId, 
-                normacc: normAcc, 
+                accnorm: normAcc, 
                 accX: receivedAccX, 
                 accY: receivedAccY, 
                 accZ: receivedAccZ 
@@ -124,7 +124,7 @@ function setupTcpServer(io) {
                         console.log(`New CSV file created: ${filepath}`);
                     }
 
-                    const csvLine = `${data.time},${data.m5time},${data.normacc},${data.accX},${data.accY},${data.accZ}\n`;
+                    const csvLine = `${data.time},${data.m5time},${data.accnorm},${data.accX},${data.accY},${data.accZ}\n`;
                     csvFiles[receivedId].write(csvLine);
                 }
             }
