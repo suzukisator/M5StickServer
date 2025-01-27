@@ -6,10 +6,10 @@ Kalman kalmanX, kalmanY, kalmanZ;
 WiFiClient wifiClient;
 
 // wifi設定
-const char* SSID = "ASUS_A8_2G";
-const char* PASSWORD = "jazz_3264";
+const char* SSID = "Buffalo-G-1AF0";
+const char* PASSWORD  = "7nyh4sj46px64";
 
-const char* SERVER_IP = "192.168.50.24";
+const char* SERVER_IP = "192.168.11.2";
 const int SERVER_PORT = 3002;
 const int DEVICE_ID = 4;
 
@@ -44,7 +44,7 @@ void accelNorm(void) {
 
 void sendData(void) {
     if (wifiClient.connected()) {
-        byte data[20];
+        byte data[24];
         float m5time = millis() / 1000.0f;
         *((int*)data) = DEVICE_ID;
         *((float*)(data + 4)) = kalacc[0];
@@ -52,7 +52,15 @@ void sendData(void) {
         *((float*)(data + 12)) = kalacc[2];
         *((float*)(data + 16)) = m5time;
 
-        wifiClient.write(data, sizeof(data));
+        size_t bytesToSend = sizeof(data);
+        size_t bytesSent = wifiClient.write(data, bytesToSend);
+        if (bytesSent < bytesToSend) {
+            int retries = 3;
+            while (retries-- > 0 && bytesSent < bytesToSend) {
+                delay(100);
+                bytesSent += wifiClient.write(data + bytesSent, bytesToSend - bytesSent);
+            }
+        }
     }
 }
 
