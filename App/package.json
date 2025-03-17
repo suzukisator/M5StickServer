@@ -6,7 +6,10 @@
   "scripts": {
     "start-server": "cd server && npm start",
     "start-client": "cd client && npm start",
-    "start": "concurrently \"npm run start-server\" \"npm run start-client\""
+    "start": "concurrently \"npm run start-server\" \"npm run start-client\"",
+    "install-server": "cd server && npm install",
+    "install-client": "cd client && npm install",
+    "install-all": "npm install && npm run install-server && npm run install-client"
   },
   "keywords": [],
   "author": "",
